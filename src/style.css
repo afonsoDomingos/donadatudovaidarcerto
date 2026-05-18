@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-black: #030508;
+  --color-brand-blue: #0b1120;
+  --color-brand-gold: #c3a343;
+  --color-brand-white: #f5f5f5;
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+body {
+  margin: 0;
+  background-color: var(--color-brand-black);
+  color: var(--color-brand-white);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+}
+
+/* Custom cinematic animations */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  opacity: 0; /* starts hidden */
+}
+
+.delay-500 { animation-delay: 500ms; }
+.delay-1000 { animation-delay: 1000ms; }
+.delay-1500 { animation-delay: 1500ms; }
+.delay-2000 { animation-delay: 2000ms; }
+.delay-3000 { animation-delay: 3000ms; }
+.delay-4000 { animation-delay: 4000ms; }
+
+/* Glow Effects */
+.glow-text {
+  text-shadow: 0 0 15px rgba(245, 245, 245, 0.15);
+}
+
+.glow-gold {
+  text-shadow: 0 0 20px rgba(195, 163, 67, 0.4);
+}
+
+/* Transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 1.5s ease-in-out;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Paywall Blur */
+.blur-intense {
+  filter: blur(16px) brightness(0.3);
+  pointer-events: none;
+  user-select: none;
+  transition: all 2s ease;
+}
+
+/* Background gradient overlays */
+.bg-cinematic {
+  background: radial-gradient(circle at center, rgba(11, 17, 32, 0.8) 0%, rgba(3, 5, 8, 1) 100%);
+}
+
+.stars-bg {
+  background-image: radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
