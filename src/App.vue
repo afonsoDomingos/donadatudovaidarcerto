@@ -1,13 +1,16 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { ChevronDown, Lock, CreditCard, Send, ShieldCheck, CheckCircle, Volume2, VolumeX } from 'lucide-vue-next';
+import { ChevronDown, Lock, CreditCard, Send, ShieldCheck, CheckCircle, Volume2, VolumeX, AlertTriangle } from 'lucide-vue-next';
 
 // Premium State
 const isPremiumUnlocked = ref(false);
 const showPaywall = ref(false);
 const showPaymentModal = ref(false);
-const paymentMethod = ref(null); // 'mpesa' | 'card' | null
+const paymentMethod = ref(null);
 const paymentConfirmed = ref(false);
+
+// Give up psychological state
+const showGiveUpWarning = ref(false);
 
 // Audio State
 const audioRef = ref(null);
@@ -29,6 +32,7 @@ const toggleAudio = () => {
 };
 
 const pages = [
+  // PARTE 1 - GRATUITA (0 a 8)
   {
     id: 1,
     title: "DO NADA\nTUDO VAI DAR CERTO",
@@ -94,11 +98,76 @@ const pages = [
     button: "Escolher Continuar",
     type: "decision"
   },
+
+  // PARTE 2 - PREMIUM (9 a 19)
   {
     id: 10,
+    title: "A Revelação",
+    text: "Talvez hoje você ainda não veja saída.\nTalvez tudo pareça confuso.",
+    subtext: "Mas a vida muda. As portas que pareciam trancadas de repente abrem-se.",
+    type: "premium-dark"
+  },
+  {
+    id: 11,
+    title: "O Reflexo",
+    text: "Olhe para si. Não com julgamento, mas com compaixão.",
+    subtext: "Você tem sido forte por tempo demais. Permita-se sentir orgulho de não ter desistido quando era o caminho mais fácil.",
+    type: "premium-hope"
+  },
+  {
+    id: 12,
+    title: "A Verdade Partilhada",
+    text: "Você não está perdido.\nE definitivamente, não está sozinho.",
+    subtext: "Neste exato momento, há milhares a chorar em silêncio. A sua dor é real, mas não é exclusiva. Você pertence a um exército invisível de sobreviventes.",
+    type: "premium-dark"
+  },
+  {
+    id: 13,
+    title: "E Se Nada Mudar?",
+    text: "E se o esforço for em vão?\nE se depois de lutar, acabar no mesmo lugar?",
+    subtext: "A água não esculpe a pedra pela força, mas pela constância. Mesmo que não veja os resultados hoje, as raízes estão a aprofundar-se.",
+    type: "premium-hope"
+  },
+  {
+    id: 14,
+    title: "O Momento de Fé",
+    text: "Feche os olhos por um segundo.\nEntregue o peso que você não consegue carregar.",
+    subtext: "Seja a Deus, ao Universo ou ao Tempo. Apenas solte. Você não precisa de ter o controlo sobre tudo.",
+    type: "premium-light"
+  },
+  {
+    id: 15,
+    title: "A Luz Invisível",
+    text: "As raízes da árvore crescem na mais profunda escuridão antes da primeira folha ver o sol.",
+    subtext: "O seu crescimento atual é invisível para os outros. Mas o seu interior está a preparar-se para florescer.",
+    type: "premium-hope"
+  },
+  {
+    id: 16,
+    title: "A Faísca",
+    text: "A qualquer momento, num dia comum... tudo muda.",
+    subtext: "Um telefonema inesperado, um encontro acidental, uma nova ideia. O universo reescreve a sua história num milésimo de segundo. Esteja pronto.",
+    type: "premium-light"
+  },
+  {
+    id: 17,
+    title: "A Cura e O Perdão",
+    text: "As feridas não desaparecem,\nelas tornam-se parte da sua armadura.",
+    subtext: "Perdoe-se pelas vezes que falhou ao tentar sobreviver. Você fez o melhor que podia com o nível de consciência e dor que tinha na altura.",
+    type: "premium-hope"
+  },
+  {
+    id: 18,
+    title: "A Promessa",
+    text: "Respire fundo.\nA tempestade está finalmente a passar.",
+    subtext: "Prepare-se para a colheita, porque a temporada de escassez ensinou-lhe a dar valor a cada gota de chuva.",
+    type: "premium-light"
+  },
+  {
+    id: 19,
     title: "A Revelação Final",
-    text: "Talvez hoje você ainda não veja saída.\nTalvez tudo pareça confuso.\nMas a vida muda.",
-    subtext: "As fases mudam.\nAs pessoas evoluem.\nAs feridas cicatrizam.\n\nE um dia…\nvocê vai olhar para trás e perceber:\n\nDo nada…\ntudo começou a dar certo.",
+    text: "As fases mudam.\nAs pessoas evoluem.\nAs feridas cicatrizam.\n\nE um dia…\nvocê vai olhar para trás e perceber:",
+    subtext: "Do nada…\ntudo começou a dar certo.",
     author: "Afonso Domingos — 2026",
     type: "finale"
   }
@@ -109,7 +178,6 @@ const currentPage = computed(() => pages[currentPageIndex.value]);
 
 // Progress Bar
 const progressPercentage = computed(() => {
-  // If we are at paywall and premium not unlocked, don't show 100% yet.
   let max = pages.length - 1;
   return (currentPageIndex.value / max) * 100;
 });
@@ -121,20 +189,22 @@ let touchStartY = 0;
 const goToNextPage = () => {
   if (isAnimating) return;
   
+  // Paywall Check - Block moving from Chapter 9 (index 8) to 10 (index 9)
   if (currentPageIndex.value === 8 && !isPremiumUnlocked.value) {
     showPaywall.value = true;
+    showGiveUpWarning.value = false;
     return;
   }
   
   if (currentPageIndex.value < pages.length - 1) {
     isAnimating = true;
     currentPageIndex.value++;
-    setTimeout(() => { isAnimating = false; }, 1500); // Wait for transition
+    setTimeout(() => { isAnimating = false; }, 1500); 
   }
 };
 
 const goToPrevPage = () => {
-  if (isAnimating || showPaywall.value) return; // Cannot go back if paywall is shown
+  if (isAnimating || showPaywall.value) return; 
   
   if (currentPageIndex.value > 0) {
     isAnimating = true;
@@ -143,9 +213,7 @@ const goToPrevPage = () => {
   }
 };
 
-// Handle manual button click
 const nextPage = () => {
-  // Se estamos na capa e o áudio não foi iniciado e o utilizador clica em começar:
   if (currentPageIndex.value === 0 && !audioEnabled.value && audioRef.value) {
      toggleAudio();
   }
@@ -153,7 +221,7 @@ const nextPage = () => {
 };
 
 const handleWheel = (e) => {
-  if (showPaymentModal.value) return; // Prevent scroll inside payment
+  if (showPaymentModal.value || showPaywall.value) return; 
   if (e.deltaY > 50) {
     goToNextPage();
   } else if (e.deltaY < -50) {
@@ -166,23 +234,21 @@ const handleTouchStart = (e) => {
 };
 
 const handleTouchMove = (e) => {
-  if (showPaymentModal.value) return;
+  if (showPaymentModal.value || showPaywall.value) return;
   const touchEndY = e.touches[0].clientY;
   const diff = touchStartY - touchEndY;
   
-  // Need a significant swipe (e.g. 50px) to trigger change
   if (diff > 50) {
     goToNextPage();
-    touchStartY = touchEndY; // Reset
+    touchStartY = touchEndY; 
   } else if (diff < -50) {
     goToPrevPage();
     touchStartY = touchEndY;
   }
 };
 
-// Keydown for accessibility
 const handleKeyDown = (e) => {
-  if (showPaymentModal.value) return;
+  if (showPaymentModal.value || showPaywall.value) return;
   if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
     goToNextPage();
   } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
@@ -209,6 +275,18 @@ const openPayment = () => {
   showPaymentModal.value = true;
 };
 
+const triggerGiveUpWarning = () => {
+  showGiveUpWarning.value = true;
+};
+
+const finalGiveUp = () => {
+  // If they truly give up, close paywall and go back to page 8
+  showGiveUpWarning.value = false;
+  showPaywall.value = false;
+  isAnimating = false;
+  // stay on page 8 (A Decisão)
+};
+
 const selectPayment = (method) => {
   paymentMethod.value = method;
 };
@@ -219,8 +297,9 @@ const simulatePayment = () => {
     isPremiumUnlocked.value = true;
     showPaymentModal.value = false;
     showPaywall.value = false;
-    isAnimating = false; // reset
-    goToNextPage(); // Go to finale
+    showGiveUpWarning.value = false;
+    isAnimating = false; 
+    goToNextPage(); // Enters Chapter 10
   }, 2000);
 };
 </script>
@@ -228,30 +307,24 @@ const simulatePayment = () => {
 <template>
   <div class="min-h-screen bg-cinematic stars-bg text-brand-white relative overflow-hidden flex flex-col justify-center items-center select-none">
     
-    <!-- Audio Player (Hidden) -->
-    <!-- Substitua o URL src pelo seu MP3 local no futuro (ex: src="/ambient.mp3") -->
     <audio ref="audioRef" src="https://cdn.pixabay.com/download/audio/2022/11/22/audio_febc508520.mp3" loop preload="auto"></audio>
 
-    <!-- PROGRESS BAR -->
     <div class="fixed top-0 left-0 h-[2px] bg-brand-gold z-50 transition-all duration-[1500ms] ease-out shadow-[0_0_10px_rgba(195,163,67,0.5)]" :style="{ width: progressPercentage + '%' }"></div>
     
-    <!-- AUDIO TOGGLE BUTTON (Global) -->
     <button @click="toggleAudio" class="fixed top-6 right-6 z-50 text-brand-white/50 hover:text-brand-gold transition-colors duration-500 backdrop-blur-md p-2 rounded-full bg-brand-white/5">
       <Volume2 v-if="isAudioPlaying" class="w-5 h-5" />
       <VolumeX v-else class="w-5 h-5" />
     </button>
 
-    <!-- Background overlay particles effect (CSS handled) -->
     <div class="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-brand-blue/30 via-transparent to-brand-black transition-colors duration-[2000ms]"></div>
 
-    <!-- Main Content Transition -->
+    <!-- MAIN CONTENT -->
     <Transition name="fade" mode="out-in">
       <div 
         :key="currentPage.id" 
         class="relative z-10 w-full max-w-4xl mx-auto px-6 py-12 flex flex-col items-center text-center justify-center min-h-screen transition-all duration-[1500ms]"
         :class="{ 'blur-intense': showPaywall && !showPaymentModal }"
       >
-        <!-- COVER PAGE -->
         <template v-if="currentPage.type === 'cover'">
           <h1 class="text-4xl md:text-6xl font-light tracking-widest leading-relaxed whitespace-pre-line animate-fade-in-up glow-text mb-8">
             {{ currentPage.title }}
@@ -262,7 +335,6 @@ const simulatePayment = () => {
           <p class="text-sm md:text-base text-gray-400 tracking-wider uppercase animate-fade-in-up delay-2000 mb-12">
             {{ currentPage.text }}
           </p>
-          
           <div class="flex flex-col items-center gap-6 animate-fade-in-up delay-3000 mt-8">
             <button 
               @click="nextPage" 
@@ -277,8 +349,38 @@ const simulatePayment = () => {
           </div>
         </template>
 
-        <!-- STANDARD CONTENT PAGES -->
-        <template v-else-if="currentPage.type !== 'finale' && currentPage.type !== 'decision'">
+        <template v-else-if="currentPage.type === 'decision'">
+          <h1 class="text-4xl md:text-6xl font-light tracking-wide leading-relaxed animate-fade-in-up glow-text mb-8">
+            {{ currentPage.text }}
+          </h1>
+          <p class="text-xl text-gray-400 font-light max-w-2xl leading-loose animate-fade-in-up delay-1000 mb-16">
+            {{ currentPage.subtext }}
+          </p>
+          <button 
+            @click="nextPage" 
+            class="animate-fade-in-up delay-2000 px-10 py-5 bg-brand-white text-brand-black rounded-full hover:scale-105 hover:shadow-[0_0_40px_rgba(245,245,245,0.4)] transition-all duration-700 uppercase tracking-widest text-sm font-bold"
+          >
+            {{ currentPage.button }}
+          </button>
+        </template>
+
+        <template v-else-if="currentPage.type === 'finale'">
+          <div class="relative max-w-3xl w-full flex flex-col items-center justify-center">
+            <div class="absolute w-full h-[1px] bg-gradient-to-r from-transparent via-brand-gold/50 to-transparent top-0 animate-fade-in-up"></div>
+            <h1 class="text-2xl md:text-4xl font-light tracking-wide leading-relaxed whitespace-pre-line animate-fade-in-up delay-1000 glow-text my-16 text-center">
+              {{ currentPage.text }}
+            </h1>
+            <p class="text-lg md:text-xl text-brand-gold/90 font-light leading-loose whitespace-pre-line animate-fade-in-up delay-2000 mb-20 text-center italic">
+              {{ currentPage.subtext }}
+            </p>
+            <div class="absolute w-full h-[1px] bg-gradient-to-r from-transparent via-brand-gold/50 to-transparent bottom-16 animate-fade-in-up delay-3000"></div>
+            <p class="text-sm tracking-[0.2em] text-gray-500 uppercase animate-fade-in-up delay-4000">
+              {{ currentPage.author }}
+            </p>
+          </div>
+        </template>
+
+        <template v-else>
           <h2 class="text-sm tracking-[0.3em] text-brand-gold/80 uppercase animate-fade-in-up mb-12">
             Capítulo {{ currentPage.id - 1 }}
           </h2>
@@ -288,102 +390,90 @@ const simulatePayment = () => {
           <p class="text-lg text-gray-400 font-light max-w-2xl leading-loose animate-fade-in-up delay-2000">
             {{ currentPage.subtext }}
           </p>
-          
           <div class="mt-20 opacity-0 animate-fade-in-up delay-4000 text-gray-600 flex flex-col items-center gap-2">
             <span class="text-[10px] uppercase tracking-[0.3em]">Deslize para continuar</span>
             <ChevronDown class="w-4 h-4 animate-bounce mt-1" />
           </div>
         </template>
-
-        <!-- DECISION PAGE (PAGE 9) -->
-        <template v-else-if="currentPage.type === 'decision'">
-          <h1 class="text-4xl md:text-6xl font-light tracking-wide leading-relaxed animate-fade-in-up glow-text mb-8">
-            {{ currentPage.text }}
-          </h1>
-          <p class="text-xl text-gray-400 font-light max-w-2xl leading-loose animate-fade-in-up delay-1000 mb-16">
-            {{ currentPage.subtext }}
-          </p>
-          
-          <button 
-            @click="nextPage" 
-            class="animate-fade-in-up delay-2000 px-10 py-5 bg-brand-white text-brand-black rounded-full hover:scale-105 hover:shadow-[0_0_40px_rgba(245,245,245,0.4)] transition-all duration-700 uppercase tracking-widest text-sm font-bold"
-          >
-            {{ currentPage.button }}
-          </button>
-        </template>
-
-        <!-- FINALE PAGE (UNLOCKED) -->
-        <template v-else-if="currentPage.type === 'finale'">
-          <div class="relative max-w-3xl w-full flex flex-col items-center justify-center">
-            <div class="absolute w-full h-[1px] bg-gradient-to-r from-transparent via-brand-gold/50 to-transparent top-0 animate-fade-in-up"></div>
-            
-            <h1 class="text-2xl md:text-4xl font-light tracking-wide leading-relaxed whitespace-pre-line animate-fade-in-up delay-1000 glow-text my-16 text-center">
-              {{ currentPage.text }}
-            </h1>
-            
-            <p class="text-lg md:text-xl text-brand-gold/90 font-light leading-loose whitespace-pre-line animate-fade-in-up delay-2000 mb-20 text-center italic">
-              {{ currentPage.subtext }}
-            </p>
-            
-            <div class="absolute w-full h-[1px] bg-gradient-to-r from-transparent via-brand-gold/50 to-transparent bottom-16 animate-fade-in-up delay-3000"></div>
-            
-            <p class="text-sm tracking-[0.2em] text-gray-500 uppercase animate-fade-in-up delay-4000">
-              {{ currentPage.author }}
-            </p>
-          </div>
-        </template>
       </div>
     </Transition>
 
-    <!-- PAYWALL OVERLAY -->
+    <!-- PAYWALL / GIVE UP OVERLAY -->
     <Transition name="fade">
-      <div v-if="showPaywall && !showPaymentModal" class="absolute inset-0 z-40 flex items-center justify-center px-4 bg-brand-black/60 backdrop-blur-sm">
-        <div class="max-w-xl text-center flex flex-col items-center">
+      <div v-if="showPaywall && !showPaymentModal" class="absolute inset-0 z-40 flex items-center justify-center px-4 bg-brand-black/80 backdrop-blur-md">
+        
+        <!-- INITIAL PAYWALL -->
+        <div v-if="!showGiveUpWarning" class="max-w-xl text-center flex flex-col items-center animate-fade-in-up">
           <Lock class="w-8 h-8 text-brand-gold mb-6 animate-pulse" />
           <h2 class="text-3xl md:text-4xl font-light mb-6 glow-text drop-shadow-2xl">
             Toda transformação começa quando você decide continuar.
           </h2>
           <p class="text-gray-300 text-lg font-light mb-12 drop-shadow-lg">
-            As próximas páginas guardam a parte mais profunda desta jornada.
+            A jornada a partir daqui aprofunda a cura, a esperança e o verdadeiro renascimento.
           </p>
           
           <button 
             @click="openPayment"
-            class="px-8 py-4 bg-transparent border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-black transition-all duration-500 rounded-full uppercase tracking-widest text-sm flex items-center gap-3 backdrop-blur-md shadow-[0_0_30px_rgba(195,163,67,0.2)]"
+            class="px-8 py-4 mb-6 bg-transparent border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-black transition-all duration-500 rounded-full uppercase tracking-widest text-sm flex items-center gap-3 backdrop-blur-md shadow-[0_0_30px_rgba(195,163,67,0.2)]"
           >
             <Lock class="w-4 h-4" />
-            Desbloquear experiência completa — 3 USD
+            Desbloquear os 10 Capítulos Finais — 3 USD
           </button>
           
-          <p class="mt-8 text-sm text-gray-400 max-w-sm italic drop-shadow-md">
-            "Menos que um simples gasto… mas talvez uma decisão que muda a forma como você vê a sua vida."
-          </p>
+          <!-- PSYCHOLOGICAL TRIGGER BUTTON -->
+          <button @click="triggerGiveUpWarning" class="text-xs text-gray-500 hover:text-gray-300 underline uppercase tracking-widest transition-colors duration-300 mt-4">
+            Não estou pronto. Quero desistir.
+          </button>
         </div>
+
+        <!-- GIVE UP WARNING (PSYCHOLOGICAL TRIGGER) -->
+        <div v-else class="max-w-xl text-center flex flex-col items-center animate-fade-in-up">
+          <AlertTriangle class="w-10 h-10 text-red-900/80 mb-6" />
+          <h2 class="text-2xl md:text-3xl font-light mb-6 text-gray-200">
+            Tem certeza de que vai desistir agora?
+          </h2>
+          <p class="text-gray-400 text-base font-light mb-12 leading-relaxed">
+            Desistir agora significa aceitar que tudo continuará exatamente igual. A dor de ficar no mesmo lugar é muito maior do que a dor de mudar. Se não der o próximo passo, nada vai dar certo do nada. A decisão é sua.
+          </p>
+          
+          <div class="flex flex-col md:flex-row gap-4 w-full justify-center">
+            <button 
+              @click="openPayment"
+              class="px-6 py-3 bg-brand-white text-brand-black hover:scale-105 transition-all duration-500 rounded-full uppercase tracking-widest text-xs font-bold"
+            >
+              Eu quero mudar
+            </button>
+            <button 
+              @click="finalGiveUp"
+              class="px-6 py-3 border border-gray-800 text-gray-500 hover:bg-gray-900 transition-all duration-500 rounded-full uppercase tracking-widest text-xs"
+            >
+              Aceito ficar igual
+            </button>
+          </div>
+        </div>
+
       </div>
     </Transition>
 
     <!-- PAYMENT MODAL -->
     <Transition name="fade">
-      <div v-if="showPaymentModal" class="absolute inset-0 z-50 flex items-center justify-center p-4 bg-brand-black/90 backdrop-blur-xl">
+      <div v-if="showPaymentModal" class="absolute inset-0 z-50 flex items-center justify-center p-4 bg-brand-black/95 backdrop-blur-2xl">
         <div class="bg-[#0a0f18] border border-gray-800 rounded-2xl max-w-md w-full p-8 shadow-2xl relative overflow-hidden">
           
-          <!-- Payment Success State -->
           <div v-if="paymentConfirmed" class="flex flex-col items-center justify-center py-12">
             <CheckCircle class="w-16 h-16 text-green-500 mb-6 animate-bounce" />
             <h3 class="text-2xl font-light text-white mb-2">Acesso Liberado</h3>
-            <p class="text-gray-400 text-center">A sua jornada continua agora.</p>
+            <p class="text-gray-400 text-center">Você escolheu a mudança. A sua jornada continua agora.</p>
           </div>
 
-          <!-- Payment Options State -->
           <div v-else>
             <button @click="showPaymentModal = false; showPaywall = true" class="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors">
               &times; FECHAR
             </button>
             
-            <h3 class="text-2xl font-light text-white mb-2">Concluir Acesso</h3>
-            <p class="text-gray-400 mb-8 text-sm">Escolha como deseja desbloquear o final desta experiência.</p>
+            <h3 class="text-2xl font-light text-white mb-2">Compromisso de Mudança</h3>
+            <p class="text-gray-400 mb-8 text-sm">Escolha como deseja desbloquear os 10 Capítulos Finais.</p>
             
-            <!-- Methods -->
             <div class="grid grid-cols-2 gap-4 mb-8">
               <button 
                 @click="selectPayment('mpesa')"
@@ -404,21 +494,18 @@ const simulatePayment = () => {
               </button>
             </div>
 
-            <!-- M-Pesa Info -->
             <div v-if="paymentMethod === 'mpesa'" class="bg-brand-black/50 p-4 rounded-lg border border-gray-800 mb-6 text-sm text-gray-400 text-center animate-fade-in-up">
               <p class="mb-2">Envie <strong>190 MT</strong> para o número:</p>
               <p class="text-xl text-brand-gold mb-2 font-mono">84 000 0000</p>
               <p class="text-xs">Após o envio, clique abaixo para confirmar.</p>
             </div>
 
-            <!-- Card Info -->
             <div v-if="paymentMethod === 'card'" class="bg-brand-black/50 p-4 rounded-lg border border-gray-800 mb-6 text-sm text-gray-400 text-center animate-fade-in-up">
               <ShieldCheck class="w-8 h-8 text-blue-500 mx-auto mb-2" />
               <p>Pagamento seguro via PayPal.</p>
               <p class="text-xs mt-2">Irá ser redirecionado para concluir o pagamento de $3 USD.</p>
             </div>
 
-            <!-- Action Button -->
             <button 
               @click="simulatePayment"
               :disabled="!paymentMethod"
