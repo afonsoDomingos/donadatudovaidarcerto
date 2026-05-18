@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { ChevronDown, Lock, CreditCard, Send, ShieldCheck, CheckCircle, Volume2, VolumeX, AlertTriangle } from 'lucide-vue-next';
+import { ChevronDown, Lock, CreditCard, Send, ShieldCheck, CheckCircle, Volume2, VolumeX, AlertTriangle, Eye } from 'lucide-vue-next';
 
 // Premium State
 const isPremiumUnlocked = ref(false);
@@ -39,6 +39,7 @@ const pages = [
     subtitle: "Às vezes a vida destrói tudo apenas para reconstruir você mais forte.",
     text: "Talvez esta seja a mensagem que você precisava ler hoje.",
     button: "Começar Jornada",
+    baseViews: 18452,
     type: "cover"
   },
   {
@@ -46,6 +47,7 @@ const pages = [
     title: "O Fundo do Poço",
     text: "O problema não é começar do zero.\nO problema é ficar parado.",
     subtext: "Sentir-se perdido, cercado de ansiedade e de fracassos silenciosos. A solidão e a comparação sugam a sua energia.",
+    baseViews: 17120,
     type: "dark"
   },
   {
@@ -53,6 +55,7 @@ const pages = [
     title: "O Silêncio da Dor",
     text: "Algumas pessoas estão cansadas…\nnão fisicamente…\nmas emocionalmente.",
     subtext: "Fingir estar bem custa caro. Carregar o mundo nas costas sem poder mostrar a exaustão.",
+    baseViews: 15890,
     type: "dark"
   },
   {
@@ -60,6 +63,7 @@ const pages = [
     title: "Quando Tudo Parece Acabar",
     text: "O fim de uma fase pode ser o início da sua verdadeira história.",
     subtext: "As falhas, as perdas e o medo constante do futuro assombram as noites mal dormidas.",
+    baseViews: 14200,
     type: "hope-start"
   },
   {
@@ -67,6 +71,7 @@ const pages = [
     title: "A Mudança Começa Dentro",
     text: "Ninguém vem salvar você. Mas você pode se reconstruir.",
     subtext: "A responsabilidade de dar o próximo pequeno passo é apenas sua.",
+    baseViews: 13540,
     type: "hope"
   },
   {
@@ -74,6 +79,7 @@ const pages = [
     title: "A Vida Pode Mudar",
     text: "Você não passou por tudo isso por acaso.",
     subtext: "Cada dor ensinou algo. O crescimento mais profundo acontece no escuro e no silêncio.",
+    baseViews: 12900,
     type: "hope"
   },
   {
@@ -81,6 +87,7 @@ const pages = [
     title: "O Recomeço",
     text: "Recomeçar também é um ato de coragem.",
     subtext: "Mesmo com medo, mesmo sem certezas. O importante é dar o primeiro passo hoje.",
+    baseViews: 11450,
     type: "light"
   },
   {
@@ -88,6 +95,7 @@ const pages = [
     title: "O Futuro",
     text: "O futuro ainda pode ser bonito.",
     subtext: "Visualize novas possibilidades e deixe-se transformado. A dor de hoje é a sua força amanhã.",
+    baseViews: 10890,
     type: "light"
   },
   {
@@ -96,6 +104,7 @@ const pages = [
     text: "Depois de tudo… você ainda está aqui.",
     subtext: "Você sobreviveu a 100% dos seus piores dias.",
     button: "Escolher Continuar",
+    baseViews: 10420,
     type: "decision"
   },
 
@@ -105,6 +114,7 @@ const pages = [
     title: "A Revelação",
     text: "Talvez hoje você ainda não veja saída.\nTalvez tudo pareça confuso.",
     subtext: "Mas a vida muda. As portas que pareciam trancadas de repente abrem-se.",
+    baseViews: 5200,
     type: "premium-dark"
   },
   {
@@ -112,6 +122,7 @@ const pages = [
     title: "O Reflexo",
     text: "Olhe para si. Não com julgamento, mas com compaixão.",
     subtext: "Você tem sido forte por tempo demais. Permita-se sentir orgulho de não ter desistido quando era o caminho mais fácil.",
+    baseViews: 5150,
     type: "premium-hope"
   },
   {
@@ -119,6 +130,7 @@ const pages = [
     title: "A Verdade Partilhada",
     text: "Você não está perdido.\nE definitivamente, não está sozinho.",
     subtext: "Neste exato momento, há milhares a chorar em silêncio. A sua dor é real, mas não é exclusiva. Você pertence a um exército invisível de sobreviventes.",
+    baseViews: 5080,
     type: "premium-dark"
   },
   {
@@ -126,6 +138,7 @@ const pages = [
     title: "E Se Nada Mudar?",
     text: "E se o esforço for em vão?\nE se depois de lutar, acabar no mesmo lugar?",
     subtext: "A água não esculpe a pedra pela força, mas pela constância. Mesmo que não veja os resultados hoje, as raízes estão a aprofundar-se.",
+    baseViews: 4900,
     type: "premium-hope"
   },
   {
@@ -133,6 +146,7 @@ const pages = [
     title: "O Momento de Fé",
     text: "Feche os olhos por um segundo.\nEntregue o peso que você não consegue carregar.",
     subtext: "Seja a Deus, ao Universo ou ao Tempo. Apenas solte. Você não precisa de ter o controlo sobre tudo.",
+    baseViews: 4850,
     type: "premium-light"
   },
   {
@@ -140,6 +154,7 @@ const pages = [
     title: "A Luz Invisível",
     text: "As raízes da árvore crescem na mais profunda escuridão antes da primeira folha ver o sol.",
     subtext: "O seu crescimento atual é invisível para os outros. Mas o seu interior está a preparar-se para florescer.",
+    baseViews: 4700,
     type: "premium-hope"
   },
   {
@@ -147,6 +162,7 @@ const pages = [
     title: "A Faísca",
     text: "A qualquer momento, num dia comum... tudo muda.",
     subtext: "Um telefonema inesperado, um encontro acidental, uma nova ideia. O universo reescreve a sua história num milésimo de segundo. Esteja pronto.",
+    baseViews: 4620,
     type: "premium-light"
   },
   {
@@ -154,6 +170,7 @@ const pages = [
     title: "A Cura e O Perdão",
     text: "As feridas não desaparecem,\nelas tornam-se parte da sua armadura.",
     subtext: "Perdoe-se pelas vezes que falhou ao tentar sobreviver. Você fez o melhor que podia com o nível de consciência e dor que tinha na altura.",
+    baseViews: 4500,
     type: "premium-hope"
   },
   {
@@ -161,6 +178,7 @@ const pages = [
     title: "A Promessa",
     text: "Respire fundo.\nA tempestade está finalmente a passar.",
     subtext: "Prepare-se para a colheita, porque a temporada de escassez ensinou-lhe a dar valor a cada gota de chuva.",
+    baseViews: 4410,
     type: "premium-light"
   },
   {
@@ -169,12 +187,20 @@ const pages = [
     text: "As fases mudam.\nAs pessoas evoluem.\nAs feridas cicatrizam.\n\nE um dia…\nvocê vai olhar para trás e perceber:",
     subtext: "Do nada…\ntudo começou a dar certo.",
     author: "Afonso Domingos — 2026",
+    baseViews: 4390,
     type: "finale"
   }
 ];
 
 const currentPageIndex = ref(0);
 const currentPage = computed(() => pages[currentPageIndex.value]);
+
+// Function to simulate saving the view to MongoDB (Placeholder for future Backend)
+const saveViewToDatabase = async (pageId) => {
+  // TODO: No futuro, chamar a API aqui para gravar no MongoDB.
+  // Exemplo: await fetch('/api/views', { method: 'POST', body: JSON.stringify({ pageId }) })
+  // console.log(`Simulando: Visualização gravada no banco para o capítulo ${pageId}`);
+};
 
 // Progress Bar
 const progressPercentage = computed(() => {
@@ -189,7 +215,6 @@ let touchStartY = 0;
 const goToNextPage = () => {
   if (isAnimating) return;
   
-  // Paywall Check - Block moving from Chapter 9 (index 8) to 10 (index 9)
   if (currentPageIndex.value === 8 && !isPremiumUnlocked.value) {
     showPaywall.value = true;
     showGiveUpWarning.value = false;
@@ -199,6 +224,7 @@ const goToNextPage = () => {
   if (currentPageIndex.value < pages.length - 1) {
     isAnimating = true;
     currentPageIndex.value++;
+    saveViewToDatabase(pages[currentPageIndex.value].id); // Trigger view save
     setTimeout(() => { isAnimating = false; }, 1500); 
   }
 };
@@ -261,6 +287,9 @@ onMounted(() => {
   window.addEventListener('touchstart', handleTouchStart, { passive: true });
   window.addEventListener('touchmove', handleTouchMove, { passive: true });
   window.addEventListener('keydown', handleKeyDown);
+  
+  // Save view for cover page on load
+  saveViewToDatabase(pages[0].id);
 });
 
 onUnmounted(() => {
@@ -280,11 +309,9 @@ const triggerGiveUpWarning = () => {
 };
 
 const finalGiveUp = () => {
-  // If they truly give up, close paywall and go back to page 8
   showGiveUpWarning.value = false;
   showPaywall.value = false;
   isAnimating = false;
-  // stay on page 8 (A Decisão)
 };
 
 const selectPayment = (method) => {
@@ -299,8 +326,13 @@ const simulatePayment = () => {
     showPaywall.value = false;
     showGiveUpWarning.value = false;
     isAnimating = false; 
-    goToNextPage(); // Enters Chapter 10
+    goToNextPage(); 
   }, 2000);
+};
+
+// Formata os números de views para ter pontos (ex: 18.452)
+const formatViews = (views) => {
+  return new Intl.NumberFormat('pt-PT').format(views);
 };
 </script>
 
@@ -395,6 +427,12 @@ const simulatePayment = () => {
             <ChevronDown class="w-4 h-4 animate-bounce mt-1" />
           </div>
         </template>
+        
+        <!-- SOCIAL PROOF (VIEW COUNTER) -->
+        <div v-if="currentPage.type !== 'cover'" class="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-0 animate-fade-in-up delay-[4500ms] flex items-center gap-2 text-brand-white/40 bg-brand-black/50 px-4 py-2 rounded-full backdrop-blur-sm border border-brand-white/5">
+          <Eye class="w-4 h-4" />
+          <span class="text-xs tracking-wider">{{ formatViews(currentPage.baseViews) }} pessoas chegaram aqui</span>
+        </div>
       </div>
     </Transition>
 
@@ -408,9 +446,16 @@ const simulatePayment = () => {
           <h2 class="text-3xl md:text-4xl font-light mb-6 glow-text drop-shadow-2xl">
             Toda transformação começa quando você decide continuar.
           </h2>
-          <p class="text-gray-300 text-lg font-light mb-12 drop-shadow-lg">
+          <p class="text-gray-300 text-lg font-light mb-8 drop-shadow-lg">
             A jornada a partir daqui aprofunda a cura, a esperança e o verdadeiro renascimento.
           </p>
+
+          <!-- SOCIAL PROOF MARKETING -->
+          <div class="bg-brand-gold/10 border border-brand-gold/20 rounded-xl p-4 mb-10 w-full max-w-sm">
+            <p class="text-brand-gold text-sm font-light">
+              Mais de <strong class="font-bold">10.400 pessoas</strong> já decidiram não desistir e desbloquearam esta jornada.
+            </p>
+          </div>
           
           <button 
             @click="openPayment"
@@ -420,13 +465,12 @@ const simulatePayment = () => {
             Desbloquear os 10 Capítulos Finais — 3 USD
           </button>
           
-          <!-- PSYCHOLOGICAL TRIGGER BUTTON -->
           <button @click="triggerGiveUpWarning" class="text-xs text-gray-500 hover:text-gray-300 underline uppercase tracking-widest transition-colors duration-300 mt-4">
             Não estou pronto. Quero desistir.
           </button>
         </div>
 
-        <!-- GIVE UP WARNING (PSYCHOLOGICAL TRIGGER) -->
+        <!-- GIVE UP WARNING -->
         <div v-else class="max-w-xl text-center flex flex-col items-center animate-fade-in-up">
           <AlertTriangle class="w-10 h-10 text-red-900/80 mb-6" />
           <h2 class="text-2xl md:text-3xl font-light mb-6 text-gray-200">
