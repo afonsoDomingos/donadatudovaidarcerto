@@ -1,6 +1,6 @@
 <script setup>
-import { ref, computed } from 'vue';
-import { ChevronDown, Lock, CreditCard, Send, ShieldCheck, CheckCircle } from 'lucide-vue-next';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ChevronDown, Lock, CreditCard, Send, ShieldCheck, CheckCircle, Volume2, VolumeX } from 'lucide-vue-next';
 
 // Premium State
 const isPremiumUnlocked = ref(false);
@@ -8,6 +8,25 @@ const showPaywall = ref(false);
 const showPaymentModal = ref(false);
 const paymentMethod = ref(null); // 'mpesa' | 'card' | null
 const paymentConfirmed = ref(false);
+
+// Audio State
+const audioRef = ref(null);
+const audioEnabled = ref(false);
+const isAudioPlaying = ref(false);
+
+const toggleAudio = () => {
+  if (!audioRef.value) return;
+  if (isAudioPlaying.value) {
+    audioRef.value.pause();
+    isAudioPlaying.value = false;
+    audioEnabled.value = false;
+  } else {
+    audioRef.value.play().then(() => {
+      isAudioPlaying.value = true;
+      audioEnabled.value = true;
+    }).catch(e => console.log("Áudio bloqueado pelo navegador", e));
+  }
+};
 
 const pages = [
   {
@@ -64,7 +83,7 @@ const pages = [
     id: 8,
     title: "O Futuro",
     text: "O futuro ainda pode ser bonito.",
-    subtext: "Visualize novas possibilidades e deixe-se transformar. A dor de hoje é a sua força amanhã.",
+    subtext: "Visualize novas possibilidades e deixe-se transformado. A dor de hoje é a sua força amanhã.",
     type: "light"
   },
   {
@@ -88,18 +107,104 @@ const pages = [
 const currentPageIndex = ref(0);
 const currentPage = computed(() => pages[currentPageIndex.value]);
 
-const nextPage = () => {
+// Progress Bar
+const progressPercentage = computed(() => {
+  // If we are at paywall and premium not unlocked, don't show 100% yet.
+  let max = pages.length - 1;
+  return (currentPageIndex.value / max) * 100;
+});
+
+// Scrolljacking Logic
+let isAnimating = false;
+let touchStartY = 0;
+
+const goToNextPage = () => {
+  if (isAnimating) return;
+  
   if (currentPageIndex.value === 8 && !isPremiumUnlocked.value) {
-    // Try to go to page 10 (index 9), but trigger paywall
     showPaywall.value = true;
     return;
   }
   
   if (currentPageIndex.value < pages.length - 1) {
+    isAnimating = true;
     currentPageIndex.value++;
+    setTimeout(() => { isAnimating = false; }, 1500); // Wait for transition
   }
 };
 
+const goToPrevPage = () => {
+  if (isAnimating || showPaywall.value) return; // Cannot go back if paywall is shown
+  
+  if (currentPageIndex.value > 0) {
+    isAnimating = true;
+    currentPageIndex.value--;
+    setTimeout(() => { isAnimating = false; }, 1500);
+  }
+};
+
+// Handle manual button click
+const nextPage = () => {
+  // Se estamos na capa e o áudio não foi iniciado e o utilizador clica em começar:
+  if (currentPageIndex.value === 0 && !audioEnabled.value && audioRef.value) {
+     toggleAudio();
+  }
+  goToNextPage();
+};
+
+const handleWheel = (e) => {
+  if (showPaymentModal.value) return; // Prevent scroll inside payment
+  if (e.deltaY > 50) {
+    goToNextPage();
+  } else if (e.deltaY < -50) {
+    goToPrevPage();
+  }
+};
+
+const handleTouchStart = (e) => {
+  touchStartY = e.touches[0].clientY;
+};
+
+const handleTouchMove = (e) => {
+  if (showPaymentModal.value) return;
+  const touchEndY = e.touches[0].clientY;
+  const diff = touchStartY - touchEndY;
+  
+  // Need a significant swipe (e.g. 50px) to trigger change
+  if (diff > 50) {
+    goToNextPage();
+    touchStartY = touchEndY; // Reset
+  } else if (diff < -50) {
+    goToPrevPage();
+    touchStartY = touchEndY;
+  }
+};
+
+// Keydown for accessibility
+const handleKeyDown = (e) => {
+  if (showPaymentModal.value) return;
+  if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+    goToNextPage();
+  } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+    goToPrevPage();
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('wheel', handleWheel, { passive: true });
+  window.addEventListener('touchstart', handleTouchStart, { passive: true });
+  window.addEventListener('touchmove', handleTouchMove, { passive: true });
+  window.addEventListener('keydown', handleKeyDown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('wheel', handleWheel);
+  window.removeEventListener('touchstart', handleTouchStart);
+  window.removeEventListener('touchmove', handleTouchMove);
+  window.removeEventListener('keydown', handleKeyDown);
+});
+
+// Paywall Actions
 const openPayment = () => {
   showPaymentModal.value = true;
 };
@@ -114,22 +219,36 @@ const simulatePayment = () => {
     isPremiumUnlocked.value = true;
     showPaymentModal.value = false;
     showPaywall.value = false;
-    currentPageIndex.value = 9; // Reveal finale
+    isAnimating = false; // reset
+    goToNextPage(); // Go to finale
   }, 2000);
 };
 </script>
 
 <template>
-  <div class="min-h-screen bg-cinematic stars-bg text-brand-white relative overflow-hidden flex flex-col justify-center items-center">
+  <div class="min-h-screen bg-cinematic stars-bg text-brand-white relative overflow-hidden flex flex-col justify-center items-center select-none">
     
+    <!-- Audio Player (Hidden) -->
+    <!-- Substitua o URL src pelo seu MP3 local no futuro (ex: src="/ambient.mp3") -->
+    <audio ref="audioRef" src="https://cdn.pixabay.com/download/audio/2022/11/22/audio_febc508520.mp3" loop preload="auto"></audio>
+
+    <!-- PROGRESS BAR -->
+    <div class="fixed top-0 left-0 h-[2px] bg-brand-gold z-50 transition-all duration-[1500ms] ease-out shadow-[0_0_10px_rgba(195,163,67,0.5)]" :style="{ width: progressPercentage + '%' }"></div>
+    
+    <!-- AUDIO TOGGLE BUTTON (Global) -->
+    <button @click="toggleAudio" class="fixed top-6 right-6 z-50 text-brand-white/50 hover:text-brand-gold transition-colors duration-500 backdrop-blur-md p-2 rounded-full bg-brand-white/5">
+      <Volume2 v-if="isAudioPlaying" class="w-5 h-5" />
+      <VolumeX v-else class="w-5 h-5" />
+    </button>
+
     <!-- Background overlay particles effect (CSS handled) -->
-    <div class="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-brand-blue/30 via-transparent to-brand-black"></div>
+    <div class="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-brand-blue/30 via-transparent to-brand-black transition-colors duration-[2000ms]"></div>
 
     <!-- Main Content Transition -->
     <Transition name="fade" mode="out-in">
       <div 
         :key="currentPage.id" 
-        class="relative z-10 w-full max-w-4xl mx-auto px-6 py-12 flex flex-col items-center text-center justify-center min-h-screen"
+        class="relative z-10 w-full max-w-4xl mx-auto px-6 py-12 flex flex-col items-center text-center justify-center min-h-screen transition-all duration-[1500ms]"
         :class="{ 'blur-intense': showPaywall && !showPaymentModal }"
       >
         <!-- COVER PAGE -->
@@ -143,13 +262,19 @@ const simulatePayment = () => {
           <p class="text-sm md:text-base text-gray-400 tracking-wider uppercase animate-fade-in-up delay-2000 mb-12">
             {{ currentPage.text }}
           </p>
-          <button 
-            @click="nextPage" 
-            class="animate-fade-in-up delay-3000 mt-8 px-8 py-4 border border-brand-white/30 rounded-full hover:bg-brand-white/10 hover:border-brand-white transition-all duration-700 uppercase tracking-widest text-sm flex items-center gap-3 backdrop-blur-sm"
-          >
-            {{ currentPage.button }}
-            <ChevronDown class="w-4 h-4 animate-bounce" />
-          </button>
+          
+          <div class="flex flex-col items-center gap-6 animate-fade-in-up delay-3000 mt-8">
+            <button 
+              @click="nextPage" 
+              class="px-8 py-4 border border-brand-white/30 rounded-full hover:bg-brand-white/10 hover:border-brand-white hover:scale-105 transition-all duration-700 uppercase tracking-widest text-sm flex items-center gap-3 backdrop-blur-sm"
+            >
+              {{ currentPage.button }}
+            </button>
+            <p class="text-[10px] uppercase tracking-widest text-brand-white/30 flex items-center gap-2">
+              <Volume2 class="w-3 h-3" />
+              Recomendado usar fones de ouvido
+            </p>
+          </div>
         </template>
 
         <!-- STANDARD CONTENT PAGES -->
@@ -164,13 +289,10 @@ const simulatePayment = () => {
             {{ currentPage.subtext }}
           </p>
           
-          <button 
-            @click="nextPage" 
-            class="mt-20 opacity-0 animate-fade-in-up delay-4000 text-gray-500 hover:text-brand-white transition-colors duration-500 flex flex-col items-center gap-2"
-          >
-            <span class="text-xs uppercase tracking-widest">Continuar</span>
-            <ChevronDown class="w-5 h-5" />
-          </button>
+          <div class="mt-20 opacity-0 animate-fade-in-up delay-4000 text-gray-600 flex flex-col items-center gap-2">
+            <span class="text-[10px] uppercase tracking-[0.3em]">Deslize para continuar</span>
+            <ChevronDown class="w-4 h-4 animate-bounce mt-1" />
+          </div>
         </template>
 
         <!-- DECISION PAGE (PAGE 9) -->
@@ -184,7 +306,7 @@ const simulatePayment = () => {
           
           <button 
             @click="nextPage" 
-            class="animate-fade-in-up delay-2000 px-10 py-5 bg-brand-white text-brand-black rounded-full hover:scale-105 hover:shadow-[0_0_30px_rgba(245,245,245,0.3)] transition-all duration-700 uppercase tracking-widest text-sm font-semibold"
+            class="animate-fade-in-up delay-2000 px-10 py-5 bg-brand-white text-brand-black rounded-full hover:scale-105 hover:shadow-[0_0_40px_rgba(245,245,245,0.4)] transition-all duration-700 uppercase tracking-widest text-sm font-bold"
           >
             {{ currentPage.button }}
           </button>
@@ -215,25 +337,25 @@ const simulatePayment = () => {
 
     <!-- PAYWALL OVERLAY -->
     <Transition name="fade">
-      <div v-if="showPaywall && !showPaymentModal" class="absolute inset-0 z-40 flex items-center justify-center px-4 bg-brand-black/40">
+      <div v-if="showPaywall && !showPaymentModal" class="absolute inset-0 z-40 flex items-center justify-center px-4 bg-brand-black/60 backdrop-blur-sm">
         <div class="max-w-xl text-center flex flex-col items-center">
           <Lock class="w-8 h-8 text-brand-gold mb-6 animate-pulse" />
-          <h2 class="text-3xl md:text-4xl font-light mb-6 glow-text">
+          <h2 class="text-3xl md:text-4xl font-light mb-6 glow-text drop-shadow-2xl">
             Toda transformação começa quando você decide continuar.
           </h2>
-          <p class="text-gray-400 text-lg font-light mb-12">
+          <p class="text-gray-300 text-lg font-light mb-12 drop-shadow-lg">
             As próximas páginas guardam a parte mais profunda desta jornada.
           </p>
           
           <button 
             @click="openPayment"
-            class="px-8 py-4 bg-transparent border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-black transition-all duration-500 rounded-full uppercase tracking-widest text-sm flex items-center gap-3 backdrop-blur-md shadow-[0_0_20px_rgba(195,163,67,0.1)]"
+            class="px-8 py-4 bg-transparent border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-black transition-all duration-500 rounded-full uppercase tracking-widest text-sm flex items-center gap-3 backdrop-blur-md shadow-[0_0_30px_rgba(195,163,67,0.2)]"
           >
             <Lock class="w-4 h-4" />
             Desbloquear experiência completa — 3 USD
           </button>
           
-          <p class="mt-8 text-sm text-gray-500 max-w-sm italic">
+          <p class="mt-8 text-sm text-gray-400 max-w-sm italic drop-shadow-md">
             "Menos que um simples gasto… mas talvez uma decisão que muda a forma como você vê a sua vida."
           </p>
         </div>
@@ -242,7 +364,7 @@ const simulatePayment = () => {
 
     <!-- PAYMENT MODAL -->
     <Transition name="fade">
-      <div v-if="showPaymentModal" class="absolute inset-0 z-50 flex items-center justify-center p-4 bg-brand-black/90 backdrop-blur-lg">
+      <div v-if="showPaymentModal" class="absolute inset-0 z-50 flex items-center justify-center p-4 bg-brand-black/90 backdrop-blur-xl">
         <div class="bg-[#0a0f18] border border-gray-800 rounded-2xl max-w-md w-full p-8 shadow-2xl relative overflow-hidden">
           
           <!-- Payment Success State -->
@@ -286,7 +408,7 @@ const simulatePayment = () => {
             <div v-if="paymentMethod === 'mpesa'" class="bg-brand-black/50 p-4 rounded-lg border border-gray-800 mb-6 text-sm text-gray-400 text-center animate-fade-in-up">
               <p class="mb-2">Envie <strong>190 MT</strong> para o número:</p>
               <p class="text-xl text-brand-gold mb-2 font-mono">84 000 0000</p>
-              <p class="text-xs">Após o envio, clique abaixo para simular a confirmação manual do comprovativo.</p>
+              <p class="text-xs">Após o envio, clique abaixo para confirmar.</p>
             </div>
 
             <!-- Card Info -->
