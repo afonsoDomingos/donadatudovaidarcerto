@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { ChevronDown, Lock, CreditCard, Send, ShieldCheck, CheckCircle, Volume2, VolumeX, AlertTriangle, Eye } from 'lucide-vue-next';
+import { ChevronDown, Lock, CreditCard, Send, ShieldCheck, CheckCircle, Volume2, VolumeX, AlertTriangle, Eye, Edit3 } from 'lucide-vue-next';
 
 // Premium State
 const isPremiumUnlocked = ref(false);
@@ -11,6 +11,11 @@ const paymentConfirmed = ref(false);
 
 // Give up psychological state
 const showGiveUpWarning = ref(false);
+
+// Reflection State
+const currentQuestionIndex = ref(0);
+const reflectionAnswer = ref("");
+const allQuestionsAnswered = ref(false);
 
 // Audio State
 const audioRef = ref(null);
@@ -32,7 +37,7 @@ const toggleAudio = () => {
 };
 
 const pages = [
-  // PARTE 1 - GRATUITA (0 a 8)
+  // PARTE 1 - GRATUITA
   {
     id: 1,
     title: "DO NADA\nTUDO VAI DAR CERTO",
@@ -100,6 +105,18 @@ const pages = [
   },
   {
     id: 9,
+    title: "O Espelho da Alma",
+    text: "Antes de tomar qualquer decisão, pare.\nResponda para si mesmo com brutal honestidade.",
+    questions: [
+      "Qual é o peso que você carrega hoje e que, no fundo, sabe que não é seu?",
+      "De que verdade você está a fugir quando se distrai no telemóvel?",
+      "Se continuasse a viver exatamente como hoje, onde estaria daqui a 5 anos?"
+    ],
+    baseViews: 10600,
+    type: "reflection"
+  },
+  {
+    id: 10,
     title: "A Decisão",
     text: "Depois de tudo… você ainda está aqui.",
     subtext: "Você sobreviveu a 100% dos seus piores dias.",
@@ -108,9 +125,9 @@ const pages = [
     type: "decision"
   },
 
-  // PARTE 2 - PREMIUM (9 a 19)
+  // PARTE 2 - PREMIUM
   {
-    id: 10,
+    id: 11,
     title: "A Revelação",
     text: "Talvez hoje você ainda não veja saída.\nTalvez tudo pareça confuso.",
     subtext: "Mas a vida muda. As portas que pareciam trancadas de repente abrem-se.",
@@ -118,7 +135,7 @@ const pages = [
     type: "premium-dark"
   },
   {
-    id: 11,
+    id: 12,
     title: "O Reflexo",
     text: "Olhe para si. Não com julgamento, mas com compaixão.",
     subtext: "Você tem sido forte por tempo demais. Permita-se sentir orgulho de não ter desistido quando era o caminho mais fácil.",
@@ -126,7 +143,7 @@ const pages = [
     type: "premium-hope"
   },
   {
-    id: 12,
+    id: 13,
     title: "A Verdade Partilhada",
     text: "Você não está perdido.\nE definitivamente, não está sozinho.",
     subtext: "Neste exato momento, há milhares a chorar em silêncio. A sua dor é real, mas não é exclusiva. Você pertence a um exército invisível de sobreviventes.",
@@ -134,7 +151,7 @@ const pages = [
     type: "premium-dark"
   },
   {
-    id: 13,
+    id: 14,
     title: "E Se Nada Mudar?",
     text: "E se o esforço for em vão?\nE se depois de lutar, acabar no mesmo lugar?",
     subtext: "A água não esculpe a pedra pela força, mas pela constância. Mesmo que não veja os resultados hoje, as raízes estão a aprofundar-se.",
@@ -142,7 +159,7 @@ const pages = [
     type: "premium-hope"
   },
   {
-    id: 14,
+    id: 15,
     title: "O Momento de Fé",
     text: "Feche os olhos por um segundo.\nEntregue o peso que você não consegue carregar.",
     subtext: "Seja a Deus, ao Universo ou ao Tempo. Apenas solte. Você não precisa de ter o controlo sobre tudo.",
@@ -150,7 +167,7 @@ const pages = [
     type: "premium-light"
   },
   {
-    id: 15,
+    id: 16,
     title: "A Luz Invisível",
     text: "As raízes da árvore crescem na mais profunda escuridão antes da primeira folha ver o sol.",
     subtext: "O seu crescimento atual é invisível para os outros. Mas o seu interior está a preparar-se para florescer.",
@@ -158,7 +175,7 @@ const pages = [
     type: "premium-hope"
   },
   {
-    id: 16,
+    id: 17,
     title: "A Faísca",
     text: "A qualquer momento, num dia comum... tudo muda.",
     subtext: "Um telefonema inesperado, um encontro acidental, uma nova ideia. O universo reescreve a sua história num milésimo de segundo. Esteja pronto.",
@@ -166,7 +183,7 @@ const pages = [
     type: "premium-light"
   },
   {
-    id: 17,
+    id: 18,
     title: "A Cura e O Perdão",
     text: "As feridas não desaparecem,\nelas tornam-se parte da sua armadura.",
     subtext: "Perdoe-se pelas vezes que falhou ao tentar sobreviver. Você fez o melhor que podia com o nível de consciência e dor que tinha na altura.",
@@ -174,7 +191,7 @@ const pages = [
     type: "premium-hope"
   },
   {
-    id: 18,
+    id: 19,
     title: "A Promessa",
     text: "Respire fundo.\nA tempestade está finalmente a passar.",
     subtext: "Prepare-se para a colheita, porque a temporada de escassez ensinou-lhe a dar valor a cada gota de chuva.",
@@ -182,7 +199,7 @@ const pages = [
     type: "premium-light"
   },
   {
-    id: 19,
+    id: 20,
     title: "A Revelação Final",
     text: "As fases mudam.\nAs pessoas evoluem.\nAs feridas cicatrizam.\n\nE um dia…\nvocê vai olhar para trás e perceber:",
     subtext: "Do nada…\ntudo começou a dar certo.",
@@ -230,6 +247,11 @@ const getPageViews = (page) => {
   return page.baseViews + dbCount;
 };
 
+// Formata os números de views para ter pontos
+const formatViews = (views) => {
+  return new Intl.NumberFormat('pt-PT').format(views);
+};
+
 // Progress Bar
 const progressPercentage = computed(() => {
   let max = pages.length - 1;
@@ -243,7 +265,13 @@ let touchStartY = 0;
 const goToNextPage = () => {
   if (isAnimating) return;
   
-  if (currentPageIndex.value === 8 && !isPremiumUnlocked.value) {
+  // Block scroll on reflection page until answered
+  if (currentPage.value.type === 'reflection' && !allQuestionsAnswered.value) {
+    return;
+  }
+  
+  // Paywall check (now page 10 is index 9)
+  if (currentPageIndex.value === 9 && !isPremiumUnlocked.value) {
     showPaywall.value = true;
     showGiveUpWarning.value = false;
     return;
@@ -252,13 +280,14 @@ const goToNextPage = () => {
   if (currentPageIndex.value < pages.length - 1) {
     isAnimating = true;
     currentPageIndex.value++;
-    saveViewToDatabase(pages[currentPageIndex.value].id); // Trigger view save
+    saveViewToDatabase(pages[currentPageIndex.value].id);
     setTimeout(() => { isAnimating = false; }, 1500); 
   }
 };
 
 const goToPrevPage = () => {
   if (isAnimating || showPaywall.value) return; 
+  if (currentPage.value.type === 'reflection' && !allQuestionsAnswered.value) return;
   
   if (currentPageIndex.value > 0) {
     isAnimating = true;
@@ -271,6 +300,22 @@ const nextPage = () => {
   if (currentPageIndex.value === 0 && !audioEnabled.value && audioRef.value) {
      toggleAudio();
   }
+  goToNextPage();
+};
+
+// Reflection Logic
+const nextQuestion = () => {
+  // Clear textarea for next question to encourage new typing, 
+  // or keep it. Clearing it forces them to think fresh.
+  if (currentQuestionIndex.value < currentPage.value.questions.length - 1) {
+    currentQuestionIndex.value++;
+    reflectionAnswer.value = "";
+  } else {
+    allQuestionsAnswered.value = true;
+  }
+};
+
+const finishReflectionAndContinue = () => {
   goToNextPage();
 };
 
@@ -303,7 +348,11 @@ const handleTouchMove = (e) => {
 
 const handleKeyDown = (e) => {
   if (showPaymentModal.value || showPaywall.value) return;
-  if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+  
+  // Se está na textarea da reflexão, não mudar de página com as setas
+  if (document.activeElement.tagName === 'TEXTAREA') return;
+
+  if (e.key === 'ArrowDown' || e.key === 'PageDown') {
     goToNextPage();
   } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
     goToPrevPage();
@@ -316,7 +365,6 @@ onMounted(() => {
   window.addEventListener('touchmove', handleTouchMove, { passive: true });
   window.addEventListener('keydown', handleKeyDown);
   
-  // Connect to backend and save initial cover view
   fetchViews().then(() => {
     saveViewToDatabase(pages[0].id);
   });
@@ -358,11 +406,6 @@ const simulatePayment = () => {
     isAnimating = false; 
     goToNextPage(); 
   }, 2000);
-};
-
-// Formata os números de views para ter pontos (ex: 18.452)
-const formatViews = (views) => {
-  return new Intl.NumberFormat('pt-PT').format(views);
 };
 </script>
 
@@ -410,6 +453,60 @@ const formatViews = (views) => {
               Recomendado usar fones de ouvido
             </p>
           </div>
+        </template>
+
+        <!-- REFLECTION PAGE (INTERACTIVE) -->
+        <template v-else-if="currentPage.type === 'reflection'">
+          
+          <div v-if="!allQuestionsAnswered" class="w-full flex flex-col items-center animate-fade-in-up">
+            <h2 class="text-xs tracking-[0.4em] text-brand-gold/60 uppercase mb-8 flex items-center gap-2">
+              <Edit3 class="w-4 h-4" />
+              Sessão de Reflexão
+            </h2>
+            <h1 class="text-2xl md:text-3xl font-light tracking-wide leading-relaxed whitespace-pre-line glow-text mb-12 max-w-2xl text-gray-300">
+              {{ currentPage.text }}
+            </h1>
+
+            <Transition mode="out-in" name="fade">
+              <div :key="currentQuestionIndex" class="w-full max-w-xl flex flex-col items-center">
+                <p class="text-xl md:text-2xl text-brand-gold italic font-light mb-8 text-center leading-relaxed">
+                  "{{ currentPage.questions[currentQuestionIndex] }}"
+                </p>
+                
+                <textarea 
+                  v-model="reflectionAnswer"
+                  placeholder="Escreva aqui a sua verdade... (Ninguém irá ler isto, nem será guardado)"
+                  class="w-full bg-brand-black/60 border border-gray-800 focus:border-brand-gold/50 rounded-2xl p-6 text-brand-white font-light text-sm outline-none resize-none h-36 backdrop-blur-md transition-all duration-500 shadow-inner focus:shadow-[0_0_20px_rgba(195,163,67,0.1)]"
+                ></textarea>
+                
+                <button 
+                  @click="nextQuestion"
+                  :disabled="reflectionAnswer.length < 3"
+                  class="mt-8 px-10 py-4 rounded-full uppercase tracking-widest text-xs font-bold transition-all duration-500 shadow-xl"
+                  :class="reflectionAnswer.length >= 3 
+                    ? 'bg-brand-white text-brand-black hover:scale-105 cursor-pointer' 
+                    : 'bg-gray-800/50 text-gray-600 cursor-not-allowed'"
+                >
+                  {{ currentQuestionIndex < currentPage.questions.length - 1 ? 'Próxima Questão' : 'Guardar no Silêncio' }}
+                </button>
+              </div>
+            </Transition>
+          </div>
+
+          <!-- AFTER REFLECTION COMPLETION -->
+          <div v-else class="flex flex-col items-center justify-center animate-fade-in-up">
+             <div class="w-20 h-[1px] bg-brand-gold/50 mb-8"></div>
+             <p class="text-2xl md:text-3xl text-gray-300 font-light mb-12 text-center max-w-2xl leading-relaxed italic">
+               As suas respostas foram lidas apenas pelo seu coração.<br><br>Você acabou de dar o primeiro passo para a mudança real.
+             </p>
+             <button 
+               @click="finishReflectionAndContinue"
+               class="group relative px-10 py-5 bg-gradient-to-r from-brand-gold/10 to-brand-gold/5 border border-brand-gold text-brand-gold hover:from-brand-gold hover:to-[#d4b353] hover:text-brand-black transition-all duration-700 rounded-full uppercase tracking-widest text-sm flex items-center gap-4 backdrop-blur-md shadow-[0_0_40px_rgba(195,163,67,0.15)] hover:shadow-[0_0_60px_rgba(195,163,67,0.4)] hover:scale-[1.02]"
+             >
+               Continuar a Jornada
+             </button>
+          </div>
+
         </template>
 
         <template v-else-if="currentPage.type === 'decision'">
@@ -484,7 +581,7 @@ const formatViews = (views) => {
           <!-- SOCIAL PROOF MARKETING -->
           <div class="bg-gradient-to-b from-brand-gold/10 to-brand-gold/5 border border-brand-gold/20 rounded-2xl p-5 mb-10 w-full max-w-sm shadow-[0_0_30px_rgba(195,163,67,0.05)]">
             <p class="text-brand-gold text-sm font-light leading-relaxed">
-              Mais de <strong class="font-semibold">{{ formatViews(getPageViews(pages[8])) }} pessoas</strong> decidiram não desistir e desbloquearam esta jornada.
+              Mais de <strong class="font-semibold">{{ formatViews(getPageViews(pages[9])) }} pessoas</strong> decidiram não desistir e desbloquearam esta jornada.
             </p>
           </div>
           
