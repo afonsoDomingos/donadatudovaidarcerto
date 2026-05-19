@@ -195,11 +195,39 @@ const pages = [
 const currentPageIndex = ref(0);
 const currentPage = computed(() => pages[currentPageIndex.value]);
 
-// Function to simulate saving the view to MongoDB (Placeholder for future Backend)
+const realViews = ref({});
+
+const fetchViews = async () => {
+  try {
+    const res = await fetch('/api/views');
+    if (res.ok) {
+      const data = await res.json();
+      realViews.value = data;
+    }
+  } catch (e) {
+    console.error("Erro ao carregar views do MongoDB:", e);
+  }
+};
+
 const saveViewToDatabase = async (pageId) => {
-  // TODO: No futuro, chamar a API aqui para gravar no MongoDB.
-  // Exemplo: await fetch('/api/views', { method: 'POST', body: JSON.stringify({ pageId }) })
-  // console.log(`Simulando: Visualização gravada no banco para o capítulo ${pageId}`);
+  try {
+    const res = await fetch('/api/views', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pageId })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      realViews.value[pageId] = data.count;
+    }
+  } catch (e) {
+    console.error("Erro ao gravar view no MongoDB:", e);
+  }
+};
+
+const getPageViews = (page) => {
+  const dbCount = realViews.value[page.id] || 0;
+  return page.baseViews + dbCount;
 };
 
 // Progress Bar
@@ -288,8 +316,10 @@ onMounted(() => {
   window.addEventListener('touchmove', handleTouchMove, { passive: true });
   window.addEventListener('keydown', handleKeyDown);
   
-  // Save view for cover page on load
-  saveViewToDatabase(pages[0].id);
+  // Connect to backend and save initial cover view
+  fetchViews().then(() => {
+    saveViewToDatabase(pages[0].id);
+  });
 });
 
 onUnmounted(() => {
@@ -431,7 +461,7 @@ const formatViews = (views) => {
         <!-- SOCIAL PROOF (VIEW COUNTER) -->
         <div v-if="currentPage.type !== 'cover'" class="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-0 animate-fade-in-up delay-[4500ms] flex items-center gap-2 text-brand-white/40 bg-brand-black/50 px-4 py-2 rounded-full backdrop-blur-sm border border-brand-white/5">
           <Eye class="w-4 h-4" />
-          <span class="text-xs tracking-wider">{{ formatViews(currentPage.baseViews) }} pessoas chegaram aqui</span>
+          <span class="text-xs tracking-wider">{{ formatViews(getPageViews(currentPage)) }} pessoas chegaram aqui</span>
         </div>
       </div>
     </Transition>
@@ -453,7 +483,7 @@ const formatViews = (views) => {
           <!-- SOCIAL PROOF MARKETING -->
           <div class="bg-brand-gold/10 border border-brand-gold/20 rounded-xl p-4 mb-10 w-full max-w-sm">
             <p class="text-brand-gold text-sm font-light">
-              Mais de <strong class="font-bold">10.400 pessoas</strong> já decidiram não desistir e desbloquearam esta jornada.
+              Mais de <strong class="font-bold">{{ formatViews(getPageViews(pages[8])) }} pessoas</strong> já decidiram não desistir e desbloquearam esta jornada.
             </p>
           </div>
           
