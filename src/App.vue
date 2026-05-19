@@ -373,7 +373,7 @@ const formatViews = (views) => {
 
     <div class="fixed top-0 left-0 h-[2px] bg-brand-gold z-50 transition-all duration-[1500ms] ease-out shadow-[0_0_10px_rgba(195,163,67,0.5)]" :style="{ width: progressPercentage + '%' }"></div>
     
-    <button @click="toggleAudio" class="fixed top-6 right-6 z-50 text-brand-white/50 hover:text-brand-gold transition-colors duration-500 backdrop-blur-md p-2 rounded-full bg-brand-white/5">
+    <button @click="toggleAudio" class="fixed top-6 right-6 z-50 text-brand-white/50 hover:text-brand-gold transition-colors duration-500 backdrop-blur-md p-3 rounded-full bg-brand-white/5 hover:bg-brand-white/10 hover:scale-110">
       <Volume2 v-if="isAudioPlaying" class="w-5 h-5" />
       <VolumeX v-else class="w-5 h-5" />
     </button>
@@ -400,11 +400,12 @@ const formatViews = (views) => {
           <div class="flex flex-col items-center gap-6 animate-fade-in-up delay-3000 mt-8">
             <button 
               @click="nextPage" 
-              class="px-8 py-4 border border-brand-white/30 rounded-full hover:bg-brand-white/10 hover:border-brand-white hover:scale-105 transition-all duration-700 uppercase tracking-widest text-sm flex items-center gap-3 backdrop-blur-sm"
+              class="group relative overflow-hidden px-10 py-4 border border-brand-white/20 rounded-full hover:border-brand-white/60 hover:bg-brand-white/5 transition-all duration-700 uppercase tracking-[0.2em] text-xs flex items-center gap-4 backdrop-blur-md shadow-lg"
             >
               {{ currentPage.button }}
+              <span class="w-1.5 h-1.5 rounded-full bg-brand-gold group-hover:scale-150 transition-transform duration-500"></span>
             </button>
-            <p class="text-[10px] uppercase tracking-widest text-brand-white/30 flex items-center gap-2">
+            <p class="text-[10px] uppercase tracking-[0.2em] text-brand-white/30 flex items-center gap-2 mt-2 opacity-70">
               <Volume2 class="w-3 h-3" />
               Recomendado usar fones de ouvido
             </p>
@@ -420,7 +421,7 @@ const formatViews = (views) => {
           </p>
           <button 
             @click="nextPage" 
-            class="animate-fade-in-up delay-2000 px-10 py-5 bg-brand-white text-brand-black rounded-full hover:scale-105 hover:shadow-[0_0_40px_rgba(245,245,245,0.4)] transition-all duration-700 uppercase tracking-widest text-sm font-bold"
+            class="group relative animate-fade-in-up delay-2000 px-12 py-5 bg-brand-white text-brand-black rounded-full hover:scale-[1.03] shadow-[0_0_30px_rgba(245,245,245,0.2)] hover:shadow-[0_0_60px_rgba(245,245,245,0.5)] transition-all duration-700 uppercase tracking-[0.2em] text-sm font-bold"
           >
             {{ currentPage.button }}
           </button>
@@ -452,23 +453,23 @@ const formatViews = (views) => {
           <p class="text-lg text-gray-400 font-light max-w-2xl leading-loose animate-fade-in-up delay-2000">
             {{ currentPage.subtext }}
           </p>
-          <div class="mt-20 opacity-0 animate-fade-in-up delay-4000 text-gray-600 flex flex-col items-center gap-2">
+          <div class="mt-20 opacity-0 animate-fade-in-up delay-4000 text-gray-500 flex flex-col items-center gap-3">
             <span class="text-[10px] uppercase tracking-[0.3em]">Deslize para continuar</span>
-            <ChevronDown class="w-4 h-4 animate-bounce mt-1" />
+            <div class="w-[1px] h-8 bg-gradient-to-b from-brand-gold/50 to-transparent opacity-50"></div>
           </div>
         </template>
         
         <!-- SOCIAL PROOF (VIEW COUNTER) -->
-        <div v-if="currentPage.type !== 'cover'" class="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-0 animate-fade-in-up delay-[4500ms] flex items-center gap-2 text-brand-white/40 bg-brand-black/50 px-4 py-2 rounded-full backdrop-blur-sm border border-brand-white/5">
-          <Eye class="w-4 h-4" />
-          <span class="text-xs tracking-wider">{{ formatViews(getPageViews(currentPage)) }} pessoas chegaram aqui</span>
+        <div v-if="currentPage.type !== 'cover'" class="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-0 animate-fade-in-up delay-[4500ms] flex items-center gap-2 text-brand-white/40 bg-brand-black/50 px-5 py-2.5 rounded-full backdrop-blur-md border border-brand-white/5 shadow-xl">
+          <Eye class="w-3.5 h-3.5 text-brand-gold/70" />
+          <span class="text-[11px] tracking-[0.1em] uppercase font-light">{{ formatViews(getPageViews(currentPage)) }} pessoas chegaram aqui</span>
         </div>
       </div>
     </Transition>
 
     <!-- PAYWALL / GIVE UP OVERLAY -->
     <Transition name="fade">
-      <div v-if="showPaywall && !showPaymentModal" class="absolute inset-0 z-40 flex items-center justify-center px-4 bg-brand-black/80 backdrop-blur-md">
+      <div v-if="showPaywall && !showPaymentModal" class="absolute inset-0 z-40 flex items-center justify-center px-4 bg-brand-black/80 backdrop-blur-lg">
         
         <!-- INITIAL PAYWALL -->
         <div v-if="!showGiveUpWarning" class="max-w-xl text-center flex flex-col items-center animate-fade-in-up">
@@ -481,28 +482,28 @@ const formatViews = (views) => {
           </p>
 
           <!-- SOCIAL PROOF MARKETING -->
-          <div class="bg-brand-gold/10 border border-brand-gold/20 rounded-xl p-4 mb-10 w-full max-w-sm">
-            <p class="text-brand-gold text-sm font-light">
-              Mais de <strong class="font-bold">{{ formatViews(getPageViews(pages[8])) }} pessoas</strong> já decidiram não desistir e desbloquearam esta jornada.
+          <div class="bg-gradient-to-b from-brand-gold/10 to-brand-gold/5 border border-brand-gold/20 rounded-2xl p-5 mb-10 w-full max-w-sm shadow-[0_0_30px_rgba(195,163,67,0.05)]">
+            <p class="text-brand-gold text-sm font-light leading-relaxed">
+              Mais de <strong class="font-semibold">{{ formatViews(getPageViews(pages[8])) }} pessoas</strong> decidiram não desistir e desbloquearam esta jornada.
             </p>
           </div>
           
           <button 
             @click="openPayment"
-            class="px-8 py-4 mb-6 bg-transparent border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-black transition-all duration-500 rounded-full uppercase tracking-widest text-sm flex items-center gap-3 backdrop-blur-md shadow-[0_0_30px_rgba(195,163,67,0.2)]"
+            class="group relative px-10 py-5 bg-gradient-to-r from-brand-gold/10 to-brand-gold/5 border border-brand-gold/40 text-brand-gold hover:from-brand-gold hover:to-[#d4b353] hover:text-brand-black transition-all duration-700 rounded-full uppercase tracking-widest text-sm flex items-center gap-4 backdrop-blur-md shadow-[0_0_40px_rgba(195,163,67,0.15)] hover:shadow-[0_0_60px_rgba(195,163,67,0.4)] hover:scale-[1.02]"
           >
             <Lock class="w-4 h-4" />
             Desbloquear os 10 Capítulos Finais — 3 USD
           </button>
           
-          <button @click="triggerGiveUpWarning" class="text-xs text-gray-500 hover:text-gray-300 underline uppercase tracking-widest transition-colors duration-300 mt-4">
+          <button @click="triggerGiveUpWarning" class="text-xs text-gray-500 hover:text-red-400/80 underline uppercase tracking-widest transition-colors duration-500 mt-6 pt-4 border-t border-gray-800/50 w-3/4">
             Não estou pronto. Quero desistir.
           </button>
         </div>
 
         <!-- GIVE UP WARNING -->
         <div v-else class="max-w-xl text-center flex flex-col items-center animate-fade-in-up">
-          <AlertTriangle class="w-10 h-10 text-red-900/80 mb-6" />
+          <AlertTriangle class="w-10 h-10 text-red-900/80 mb-6 drop-shadow-[0_0_15px_rgba(220,38,38,0.3)]" />
           <h2 class="text-2xl md:text-3xl font-light mb-6 text-gray-200">
             Tem certeza de que vai desistir agora?
           </h2>
@@ -510,16 +511,16 @@ const formatViews = (views) => {
             Desistir agora significa aceitar que tudo continuará exatamente igual. A dor de ficar no mesmo lugar é muito maior do que a dor de mudar. Se não der o próximo passo, nada vai dar certo do nada. A decisão é sua.
           </p>
           
-          <div class="flex flex-col md:flex-row gap-4 w-full justify-center">
+          <div class="flex flex-col md:flex-row gap-5 w-full justify-center">
             <button 
               @click="openPayment"
-              class="px-6 py-3 bg-brand-white text-brand-black hover:scale-105 transition-all duration-500 rounded-full uppercase tracking-widest text-xs font-bold"
+              class="px-8 py-4 bg-brand-white text-brand-black hover:scale-105 transition-all duration-500 rounded-full uppercase tracking-widest text-xs font-bold shadow-[0_0_30px_rgba(245,245,245,0.2)]"
             >
               Eu quero mudar
             </button>
             <button 
               @click="finalGiveUp"
-              class="px-6 py-3 border border-gray-800 text-gray-500 hover:bg-gray-900 transition-all duration-500 rounded-full uppercase tracking-widest text-xs"
+              class="px-8 py-4 border border-gray-700 text-gray-500 hover:bg-gray-900 hover:text-gray-400 transition-all duration-500 rounded-full uppercase tracking-widest text-xs"
             >
               Aceito ficar igual
             </button>
@@ -532,16 +533,19 @@ const formatViews = (views) => {
     <!-- PAYMENT MODAL -->
     <Transition name="fade">
       <div v-if="showPaymentModal" class="absolute inset-0 z-50 flex items-center justify-center p-4 bg-brand-black/95 backdrop-blur-2xl">
-        <div class="bg-[#0a0f18] border border-gray-800 rounded-2xl max-w-md w-full p-8 shadow-2xl relative overflow-hidden">
+        <div class="bg-[#0a0f18] border border-gray-800 rounded-3xl max-w-md w-full p-8 shadow-[0_0_50px_rgba(0,0,0,0.8)] relative overflow-hidden">
           
-          <div v-if="paymentConfirmed" class="flex flex-col items-center justify-center py-12">
-            <CheckCircle class="w-16 h-16 text-green-500 mb-6 animate-bounce" />
-            <h3 class="text-2xl font-light text-white mb-2">Acesso Liberado</h3>
-            <p class="text-gray-400 text-center">Você escolheu a mudança. A sua jornada continua agora.</p>
+          <div v-if="paymentConfirmed" class="flex flex-col items-center justify-center py-12 animate-fade-in-up">
+            <div class="relative mb-6">
+              <div class="absolute inset-0 bg-green-500 blur-xl opacity-20 rounded-full"></div>
+              <CheckCircle class="w-16 h-16 text-green-500 relative z-10" />
+            </div>
+            <h3 class="text-2xl font-light text-white mb-3">Acesso Liberado</h3>
+            <p class="text-gray-400 text-center leading-relaxed">Você escolheu a mudança. A sua jornada continua agora.</p>
           </div>
 
           <div v-else>
-            <button @click="showPaymentModal = false; showPaywall = true" class="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors">
+            <button @click="showPaymentModal = false; showPaywall = true" class="absolute top-6 right-6 text-gray-600 hover:text-white transition-colors duration-300">
               &times; FECHAR
             </button>
             
@@ -551,42 +555,42 @@ const formatViews = (views) => {
             <div class="grid grid-cols-2 gap-4 mb-8">
               <button 
                 @click="selectPayment('mpesa')"
-                class="p-4 border rounded-xl flex flex-col items-center gap-3 transition-all duration-300"
-                :class="paymentMethod === 'mpesa' ? 'border-brand-gold bg-brand-gold/10 text-brand-gold' : 'border-gray-800 text-gray-400 hover:border-gray-600'"
+                class="p-5 border rounded-2xl flex flex-col items-center gap-3 transition-all duration-300"
+                :class="paymentMethod === 'mpesa' ? 'border-brand-gold bg-brand-gold/10 text-brand-gold scale-[1.02] shadow-[0_0_20px_rgba(195,163,67,0.15)]' : 'border-gray-800 text-gray-500 hover:border-gray-600 hover:bg-gray-800/30'"
               >
-                <Send class="w-6 h-6" />
-                <span class="text-sm font-medium">M-Pesa</span>
+                <Send class="w-7 h-7" />
+                <span class="text-sm font-medium tracking-wide">M-Pesa</span>
               </button>
               
               <button 
                 @click="selectPayment('card')"
-                class="p-4 border rounded-xl flex flex-col items-center gap-3 transition-all duration-300"
-                :class="paymentMethod === 'card' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-gray-800 text-gray-400 hover:border-gray-600'"
+                class="p-5 border rounded-2xl flex flex-col items-center gap-3 transition-all duration-300"
+                :class="paymentMethod === 'card' ? 'border-blue-500 bg-blue-500/10 text-blue-400 scale-[1.02] shadow-[0_0_20px_rgba(59,130,246,0.15)]' : 'border-gray-800 text-gray-500 hover:border-gray-600 hover:bg-gray-800/30'"
               >
-                <CreditCard class="w-6 h-6" />
-                <span class="text-sm font-medium">Cartão / PayPal</span>
+                <CreditCard class="w-7 h-7" />
+                <span class="text-sm font-medium tracking-wide">PayPal</span>
               </button>
             </div>
 
-            <div v-if="paymentMethod === 'mpesa'" class="bg-brand-black/50 p-4 rounded-lg border border-gray-800 mb-6 text-sm text-gray-400 text-center animate-fade-in-up">
+            <div v-if="paymentMethod === 'mpesa'" class="bg-gradient-to-b from-brand-black/50 to-transparent p-5 rounded-xl border border-gray-800/50 mb-8 text-sm text-gray-400 text-center animate-fade-in-up">
               <p class="mb-2">Envie <strong>190 MT</strong> para o número:</p>
-              <p class="text-xl text-brand-gold mb-2 font-mono">84 000 0000</p>
-              <p class="text-xs">Após o envio, clique abaixo para confirmar.</p>
+              <p class="text-2xl text-brand-gold mb-3 font-mono tracking-widest font-light">84 000 0000</p>
+              <p class="text-[11px] uppercase tracking-widest opacity-60">Após o envio, clique abaixo para confirmar.</p>
             </div>
 
-            <div v-if="paymentMethod === 'card'" class="bg-brand-black/50 p-4 rounded-lg border border-gray-800 mb-6 text-sm text-gray-400 text-center animate-fade-in-up">
-              <ShieldCheck class="w-8 h-8 text-blue-500 mx-auto mb-2" />
-              <p>Pagamento seguro via PayPal.</p>
-              <p class="text-xs mt-2">Irá ser redirecionado para concluir o pagamento de $3 USD.</p>
+            <div v-if="paymentMethod === 'card'" class="bg-gradient-to-b from-brand-black/50 to-transparent p-5 rounded-xl border border-gray-800/50 mb-8 text-sm text-gray-400 text-center animate-fade-in-up">
+              <ShieldCheck class="w-10 h-10 text-blue-500/80 mx-auto mb-3" />
+              <p class="tracking-wide">Pagamento seguro via PayPal.</p>
+              <p class="text-[11px] uppercase tracking-widest opacity-60 mt-3">Irá ser redirecionado para concluir o pagamento de $3 USD.</p>
             </div>
 
             <button 
               @click="simulatePayment"
               :disabled="!paymentMethod"
-              class="w-full py-4 rounded-full font-medium tracking-wide uppercase text-sm transition-all duration-500"
+              class="w-full py-5 rounded-full font-bold tracking-widest uppercase text-xs transition-all duration-500 shadow-xl"
               :class="paymentMethod 
-                ? 'bg-brand-white text-brand-black hover:scale-[1.02]' 
-                : 'bg-gray-800 text-gray-500 cursor-not-allowed'"
+                ? 'bg-brand-white text-brand-black hover:scale-[1.03] hover:shadow-[0_0_30px_rgba(245,245,245,0.3)] cursor-pointer' 
+                : 'bg-gray-800/50 text-gray-600 cursor-not-allowed border border-gray-800'"
             >
               {{ paymentMethod === 'mpesa' ? 'Confirmar M-Pesa' : paymentMethod === 'card' ? 'Pagar com PayPal' : 'Selecione um método' }}
             </button>
